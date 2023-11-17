@@ -85,7 +85,7 @@ Make a property mandatory by chaining the `required()` method. Omitting this rul
 Rules->type(Type);
 ```
 
-Enforce a data type on the request by chaining the `type()` method and passing it one of the available enum `Type`s as its argument.
+Enforce a data type on the request by chaining the `type()` method and passing it one of the available enum [`Type`](#types)s as its argument.
 
 ### Types
 Type|Description
@@ -129,7 +129,7 @@ Any value that isn't an empty string will cause the `type()` rule to fail.
 ```php
 Rules->min(?int = null);
 ```
-Enforce a minimum length/size/count on a propety depending on its `type()`
+Enforce a minimum length/size/count on a propety depending on its [`type()`](#type)
 
 Type|Expects
 --|--
@@ -137,13 +137,13 @@ Type|Expects
 `Type::STRING`|String length to be larger or equal to provided value
 `Type::ARRAY`, `Type::OBJECT`|Array size or object key count to be larger or equal to provided value
 
-**`min()` will not have an effect on `Type`s not provided in this list.**
+**`min()` will not have an effect on [`Type`](#types)s not provided in this list.**
 
 ## `max()`
 ```php
 Rules->max(?int = null);
 ```
-Enforce a maximum length/size/count on a propety depending on its `type()`
+Enforce a maximum length/size/count on a propety depending on its [`type()`](#type)
 
 Type|Expects
 --|--
@@ -151,4 +151,4 @@ Type|Expects
 `Type::STRING`|String length to be smaller or equal to provided value
 `Type::ARRAY`, `Type::OBJECT`|Array size or object key count to be smaller or equal to provided value
 
-**`max()` will not have an effect on `Type`s not provided in this list.**
+**`max()` will not have an effect on [`Type`](#types)s not provided in this list.**
