@@ -141,22 +141,22 @@
 			};
 		}
 
-		public function eval_min(mixed $value): bool {
+		public function eval_min(mixed $value, Scope $scope): bool {
 			return match($this->type) {
-				Type::NUMBER => $this->eval_type($value) && $value >= $this->min,
-				Type::STRING => $this->eval_type($value) && strlen($value) >= $this->min,
+				Type::NUMBER => $this->eval_type($value, $scope) && $value >= $this->min,
+				Type::STRING => $this->eval_type($value, $scope) && strlen($value) >= $this->min,
 				Type::ARRAY,
-				Type::OBJECT => $this->eval_type($value) && count($value) >= $this->min,
+				Type::OBJECT => $this->eval_type($value, $scope) && count($value) >= $this->min,
 				default => true
 			};
 		}
 
-		public function eval_max(mixed $value): bool {
+		public function eval_max(mixed $value, Scope $scope): bool {
 			return match($this->type) {
-				Type::NUMBER => $this->eval_type($value) && $value <= $this->max,
-				Type::STRING => $this->eval_type($value) && strlen($value) <= $this->max,
+				Type::NUMBER => $this->eval_type($value, $scope) && $value <= $this->max,
+				Type::STRING => $this->eval_type($value, $scope) && strlen($value) <= $this->max,
 				Type::ARRAY,
-				Type::OBJECT => $this->eval_type($value) && count($value) <= $this->max,
+				Type::OBJECT => $this->eval_type($value, $scope) && count($value) <= $this->max,
 				default => true
 			};
 		}

@@ -84,11 +84,11 @@
 				$this->add_error($name, "Value must be of type '{$rules->type->name}'");
 			}
 
-			if ($rules->min && !$rules->eval_min($value)) {
+			if ($rules->min && !$rules->eval_min($value, $scope)) {
 				$this->add_error($name, "Value must be larger or equal to {$rules->min}");
 			}
 
-			if ($rules->max && !$rules->eval_max($value)) {
+			if ($rules->max && !$rules->eval_max($value, $scope)) {
 				$this->add_error($name, "Value must be smaller or equal to {$rules->max}");
 			}
 		}
