@@ -16,6 +16,6 @@
         }
     },
     "require": {
-        "victorwesterlund/xenum": "dev-master"
+        "victorwesterlund/xenum": "^1.1"
     }
 }
