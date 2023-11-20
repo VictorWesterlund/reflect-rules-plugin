@@ -4,6 +4,8 @@
 
 	use \victorwesterlund\xEnum;
 
+	use \ReflectRules\Scope;
+
 	// Supported types for is_type()
 	enum Type {
 		use xEnum;
@@ -80,17 +82,60 @@
 			Methods are not called until all rules have been defined.
 		*/
 
-		public function eval_required(array $scope): bool {
-			return array_key_exists($this->property, $scope);
+		private function eval_type_boolean(mixed $value, Scope $scope): bool {
+			// Coerce $value to bool primitive from string for GET parameters
+			if ($scope === Scope::GET) {
+				switch ($value) {
+					case "true":
+					case "1":
+					case "on":
+					case "yes":
+						$value = true;
+						break;
+	
+					case "false":
+					case "0":
+					case "off":
+					case "no":
+						$value = false;
+						break;
+	
+					default:
+						$value = null;
+				}
+
+				// Mutate value on superglobal from string to primitive
+				$GLOBALS[$scope->value][$this->property] = $value;
+			}
+
+			return is_bool($value);
 		}
 
-		public function eval_type(mixed $value): bool {
+		/*
+			## Public eval methods
+			These are the entry-point eval methods that in turn can call other
+			helper methods for fine-graned validation.
+		*/
+
+		public function eval_required(Scope $scope): bool {
+			$scope_data = &$GLOBALS[$scope->value];
+
+			if (array_key_exists($this->property, $scope_data)) {
+				return true;
+			}
+
+			// Property does not exist in scope, create nulled superglobal for it
+			$scope_data[$this->property] = null;
+			return false;
+		}
+
+		public function eval_type(mixed $value, Scope $scope): bool {
 			return match($this->type) {
 				Type::NUMBER  => is_numeric($value),
 				Type::STRING  => is_string($value),
-				Type::BOOLEAN => is_bool($value),
-				Type::ARRAY   => is_array($value),
-				Type::OBJECT  => $this->eval_object($value),
+				Type::BOOLEAN => $this->eval_type_boolean($value, $scope),
+				Type::ARRAY,
+				Type::OBJECT  => is_array($value),
 				Type::NULL    => is_null($value),
 				default => true
 			};
@@ -114,10 +159,5 @@
 				Type::OBJECT => $this->eval_type($value) && count($value) <= $this->max,
 				default => true
 			};
-		}
-
-		// TODO: Recursive Rules eval of multidimensional object
-		public function eval_object(mixed $object): bool {
-			return is_array($object);
 		}
 	}
