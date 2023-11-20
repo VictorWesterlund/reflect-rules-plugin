@@ -4,23 +4,22 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "035091a14ba6701d664e69d17b3f630b",
+    "content-hash": "98953f6b9df8b6761e2d57fc66815033",
     "packages": [
         {
             "name": "victorwesterlund/xenum",
-            "version": "dev-master",
+            "version": "1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/VictorWesterlund/php-xenum.git",
-                "reference": "99b784841ee5b69fdfcc4c466ef54f3af4ea4a85"
+                "reference": "8972f06f42abd1f382807a67e937d5564bb89699"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/VictorWesterlund/php-xenum/zipball/99b784841ee5b69fdfcc4c466ef54f3af4ea4a85",
-                "reference": "99b784841ee5b69fdfcc4c466ef54f3af4ea4a85",
+                "url": "https://api.github.com/repos/VictorWesterlund/php-xenum/zipball/8972f06f42abd1f382807a67e937d5564bb89699",
+                "reference": "8972f06f42abd1f382807a67e937d5564bb89699",
                 "shasum": ""
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -40,17 +39,15 @@
             "description": "PHP eXtended Enums. The missing quality-of-life features from PHP 8+ Enums",
             "support": {
                 "issues": "https://github.com/VictorWesterlund/php-xenum/issues",
-                "source": "https://github.com/VictorWesterlund/php-xenum/tree/1.1.0"
+                "source": "https://github.com/VictorWesterlund/php-xenum/tree/1.1.1"
             },
-            "time": "2023-10-09T11:32:07+00:00"
+            "time": "2023-11-20T10:10:39+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "victorwesterlund/xenum": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
