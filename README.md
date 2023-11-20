@@ -114,7 +114,7 @@ Value|Coerced to
 
 Any other value will cause the `type()` rule to fail.
 
-> **Note**
+> [!IMPORTANT]
 > This coercion is only applies for `Ruleset->GET()`. `Ruleset->POST()` will enforce real `true` and `type` values since it's JSON
 
 #### Null coercion from string for search parameters
@@ -122,7 +122,7 @@ Search parameters are read as strings, a null value is therefor coerced from an 
 
 Any value that isn't an empty string will cause the `type()` rule to fail.
 
-> **Note**
+> [!IMPORTANT]
 > This coercion is only applies for `Ruleset->GET()`. `Ruleset->POST()` will enforce the real `null` value since it's JSON
 
 ## `min()`
