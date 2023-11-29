@@ -125,6 +125,12 @@ Any value that isn't an empty string will cause the `type()` rule to fail.
 > [!IMPORTANT]
 > This coercion is only applies for `Ruleset->GET()`. `Ruleset->POST()` will enforce the real `null` value since it's JSON
 
+## `default()`
+```php
+Rules->default(mixed);
+```
+Set superglobal property to a defined default value if the property was not provided in superglobal scope
+
 ## `min()`
 ```php
 Rules->min(?int = null);
