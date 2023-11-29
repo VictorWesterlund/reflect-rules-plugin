@@ -78,6 +78,10 @@
 		// Add Type constraint with optional argument
 		public function type(Type $type, mixed $arg = null): self {
 			if ($type === Type::ENUM) {
+				if (!is_array($arg)) {
+					throw new \Exception("Expected type 'array' of ENUM values as second argument");
+				}
+
 				$this->enum = $arg;
 			}
 
@@ -129,7 +133,8 @@
 		}
 
 		private function eval_type_enum(mixed $value): bool {
-			return in_array($value, $this->enum);
+			// Return true if value isn't boolean and exists in enum array
+			return !is_bool($value) && in_array($value, $this->enum);
 		}
 
 		/*
