@@ -10,12 +10,13 @@
 	enum Type {
 		use xEnum;
 		
+		case NULL;
+		case ENUM;
+		case ARRAY;
 		case NUMBER;
 		case STRING;
-		case BOOLEAN;
-		case ARRAY;
 		case OBJECT;
-		case NULL;
+		case BOOLEAN;
 	}
 
 	class Rules {
@@ -27,6 +28,8 @@
 		private ?Type $type = null;
 		// Typed array of type ReflectRules\Type
 		public ?array $types = null;
+
+		public ?array $enum = null;
 
 		private bool $default_enabled = false;
 		public mixed $default;
@@ -72,8 +75,12 @@
 			return $this;
 		}
 
-		// Set property Types
-		public function type(Type $type): self {
+		// Add Type constraint with optional argument
+		public function type(Type $type, mixed $arg = null): self {
+			if ($type === Type::ENUM) {
+				$this->enum = $arg;
+			}
+
 			$this->types[] = $type;
 			return $this;
 		}
@@ -121,6 +128,10 @@
 			return is_bool($value);
 		}
 
+		private function eval_type_enum(mixed $value): bool {
+			return in_array($value, $this->enum);
+		}
+
 		/*
 			## Public eval methods
 			These are the entry-point eval methods that in turn can call other
@@ -152,6 +163,7 @@
 					Type::BOOLEAN => $match = $this->eval_type_boolean($value, $scope),
 					Type::ARRAY,
 					Type::OBJECT  => $match = is_array($value),
+					Type::ENUM    => $match = $this->eval_type_enum($value),
 					Type::NULL    => $match = is_null($value)
 				};
 

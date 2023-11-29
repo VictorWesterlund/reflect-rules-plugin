@@ -84,7 +84,13 @@
 				// List names of each allowed type
 				$types = implode(" or ", array_map(fn($type): string => $type->name, $rules->types));
 
-				$this->add_error($name, "Value must be of type {$types}");
+				// List allowed enum values
+				if ($rules->enum) {
+					$values = implode(" or ", array_map(fn($value): string => "'{$value}'", $rules->enum));
+					$this->add_error($name, "Value must be exactly: {$values}");
+				}
+
+				$this->add_error($name, "Value must be of type {$types}{$enum_values}");
 			}
 
 			if ($rules->min && !$rules->eval_min($value, $scope)) {
