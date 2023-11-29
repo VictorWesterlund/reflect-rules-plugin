@@ -90,7 +90,7 @@
 					$this->add_error($name, "Value must be exactly: {$values}");
 				}
 
-				$this->add_error($name, "Value must be of type {$types}{$enum_values}");
+				$this->add_error($name, "Value must be of type {$types}");
 			}
 
 			if ($rules->min && !$rules->eval_min($value, $scope)) {

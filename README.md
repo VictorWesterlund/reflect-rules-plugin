@@ -87,6 +87,13 @@ Rules->type(Type);
 
 Enforce a data type on the request by chaining the `type()` method and passing it one of the available enum [`Type`](#types)s as its argument.
 
+> [!TIP]
+> Allow multiple types (union) by chaining multiple `type()` methods
+> ```php
+> // Example
+> Rules->type(Type::NUMBER)->type(Type::NULL);
+> ```
+
 ### Types
 Type|Description
 --|--
