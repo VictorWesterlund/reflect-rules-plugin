@@ -24,6 +24,9 @@
 		public bool $required = false;
 		public ?Type $type = null;
 
+		private bool $default_enabled = false;
+		public mixed $default;
+
 		public ?int $min = null;
 		public ?int $max = null;
 
@@ -76,6 +79,14 @@
 			return $this;
 		}
 
+		// Set a default value if property is not provided
+		public function default(mixed $value): self {
+			$this->default_enabled = true;
+			$this->default = $value;
+			
+			return $this;
+		}
+
 		/*
 			# Eval methods
 			These methods are used to check conformity against set rules.
@@ -124,8 +135,11 @@
 				return true;
 			}
 
-			// Property does not exist in scope, create nulled superglobal for it
-			$scope_data[$this->property] = null;
+			// Property does not exist in superglobal, create one with default value if enabled
+			if ($this->default_enabled) {
+				$scope_data[$this->property] = $this->default;
+			}
+
 			return false;
 		}
 
