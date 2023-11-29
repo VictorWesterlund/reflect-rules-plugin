@@ -95,7 +95,7 @@ Type|Description
 `Type::BOOLEAN`|Value must be a boolean or ([**considered bool for GET rules**](#boolean-coercion-from-string-for-search-parameters))
 `Type::ARRAY`|Value must be a JSON array
 `Type::OBJECT`|Value must be a JSON object
-`Type::ENUM`|Value must be exactly one of pre-defined values ([**more information**](#type-enum))
+`Type::ENUM`|Value must be exactly one of pre-defined values ([**more information**](#typeenum))
 `Type::NULL`|Value must be null or ([**considered null for GET rules**](#null-coercion-from-string-for-search-parameters))
 
 #### `Type::ENUM`
