@@ -22,7 +22,11 @@
 		private string $property;
 
 		public bool $required = false;
-		public ?Type $type = null;
+
+		// Matched Type against $types array
+		private ?Type $type = null;
+		// Typed array of type ReflectRules\Type
+		public ?array $types = null;
 
 		private bool $default_enabled = false;
 		public mixed $default;
@@ -68,14 +72,9 @@
 			return $this;
 		}
 
-		// Set property Type
-		public function type(Type|string $type): self {
-			// Coerce string to Type enum
-			if (!($type instanceof Type)) {
-				$type = Type::fromName($string);
-			}
-
-			$this->type = $type;
+		// Set property Types
+		public function type(Type $type): self {
+			$this->types[] = $type;
 			return $this;
 		}
 
@@ -144,15 +143,28 @@
 		}
 
 		public function eval_type(mixed $value, Scope $scope): bool {
-			return match($this->type) {
-				Type::NUMBER  => is_numeric($value),
-				Type::STRING  => is_string($value),
-				Type::BOOLEAN => $this->eval_type_boolean($value, $scope),
-				Type::ARRAY,
-				Type::OBJECT  => is_array($value),
-				Type::NULL    => is_null($value),
-				default => true
-			};
+			$match = false;
+
+			foreach ($this->types as $type) {
+				match($type) {
+					Type::NUMBER  => $match = is_numeric($value),
+					Type::STRING  => $match = is_string($value),
+					Type::BOOLEAN => $match = $this->eval_type_boolean($value, $scope),
+					Type::ARRAY,
+					Type::OBJECT  => $match = is_array($value),
+					Type::NULL    => $match = is_null($value)
+				};
+
+				// Found a matching type
+				if ($match) {
+					// Set the matched Type for use in other rules
+					$this->type = $type;
+					return true;
+				}
+			}
+
+			// No matching types were found
+			return false;
 		}
 
 		public function eval_min(mixed $value, Scope $scope): bool {

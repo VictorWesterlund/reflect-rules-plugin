@@ -80,8 +80,11 @@
 				The error messages will be returned 
 			*/
 
-			if ($rules->type && !$rules->eval_type($value, $scope)) {
-				$this->add_error($name, "Value must be of type '{$rules->type->name}'");
+			if ($rules->types && !$rules->eval_type($value, $scope)) {
+				// List names of each allowed type
+				$types = implode(" or ", array_map(fn($type): string => $type->name, $rules->types));
+
+				$this->add_error($name, "Value must be of type {$types}");
 			}
 
 			if ($rules->min && !$rules->eval_min($value, $scope)) {
