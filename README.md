@@ -95,7 +95,19 @@ Type|Description
 `Type::BOOLEAN`|Value must be a boolean or ([**considered bool for GET rules**](#boolean-coercion-from-string-for-search-parameters))
 `Type::ARRAY`|Value must be a JSON array
 `Type::OBJECT`|Value must be a JSON object
+`Type::ENUM`|Value must be exactly one of pre-defined values ([**more information**](#type-enum))
 `Type::NULL`|Value must be null or ([**considered null for GET rules**](#null-coercion-from-string-for-search-parameters))
+
+#### `Type::ENUM`
+
+Provided value for property must be an exact match of any value provided as an `array` to the second argument of `type(Type::ENUM, <whitelist>)`
+```php
+Rules->type(Type::ENUM, [
+  "FOO",
+  "BAR"
+]);
+```
+Any value that isn't `"FOO"` or `"BAR"` will be rejected.
 
 #### Boolean coercion from string for search parameters
 Search parameters are read as strings, a boolean is therefor coerced from the following rules.
