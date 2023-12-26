@@ -58,13 +58,13 @@
 		}
 
 		// Set the minimum lenth/size for property
-		public function min(?int $value = null) {
+		public function min(?int $value = null): self {
 			$this->min = $value;
 			return $this;
 		}
 
 		// Set the maximum length/size for property
-		public function max(?int $value = null) {
+		public function max(?int $value = null): self {
 			$this->max = $value;
 			return $this;
 		}
