@@ -137,6 +137,26 @@
 			return !is_bool($value) && in_array($value, $this->enum);
 		}
 
+		private function eval_json(mixed $value, Scope $scope): bool {
+			// Arrays in POST parameters should already be decoded
+			if ($scope === Scope::POST) {
+				return is_array($value);
+			}
+
+			// Decode stringified JSON
+			$json = json_decode($value);
+
+			// Failed to decode JSON
+			if ($json === null) {
+				return false;
+			}
+
+			// Mutate property on superglobal with decoded JSON
+			$GLOBALS[Scope::GET->value][$this->property] = $json;
+
+			return true;
+		}
+
 		/*
 			## Public eval methods
 			These are the entry-point eval methods that in turn can call other
@@ -167,7 +187,7 @@
 					Type::STRING  => $match = is_string($value),
 					Type::BOOLEAN => $match = $this->eval_type_boolean($value, $scope),
 					Type::ARRAY,
-					Type::OBJECT  => $match = is_array($value),
+					Type::OBJECT  => $match = $this->eval_json($value, $scope),
 					Type::ENUM    => $match = $this->eval_type_enum($value),
 					Type::NULL    => $match = is_null($value)
 				};
@@ -189,7 +209,7 @@
 				Type::NUMBER => $this->eval_type($value, $scope) && $value >= $this->min,
 				Type::STRING => $this->eval_type($value, $scope) && strlen($value) >= $this->min,
 				Type::ARRAY,
-				Type::OBJECT => $this->eval_type($value, $scope) && count($value) >= $this->min,
+				Type::OBJECT => $this->eval_type($value, $scope) && count($GLOBALS[$scope->value][$this->property]) >= $this->min,
 				default => true
 			};
 		}
@@ -199,7 +219,7 @@
 				Type::NUMBER => $this->eval_type($value, $scope) && $value <= $this->max,
 				Type::STRING => $this->eval_type($value, $scope) && strlen($value) <= $this->max,
 				Type::ARRAY,
-				Type::OBJECT => $this->eval_type($value, $scope) && count($value) <= $this->max,
+				Type::OBJECT => $this->eval_type($value, $scope) && count($GLOBALS[$scope->value][$this->property]) <= $this->max,
 				default => true
 			};
 		}
