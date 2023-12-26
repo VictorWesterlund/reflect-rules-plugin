@@ -2,14 +2,10 @@
 
 	namespace ReflectRules;
 
-	use \victorwesterlund\xEnum;
-
 	use \ReflectRules\Scope;
 
 	// Supported types for is_type()
 	enum Type {
-		use xEnum;
-		
 		case NULL;
 		case ENUM;
 		case ARRAY;
