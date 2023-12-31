@@ -55,6 +55,7 @@
 				}
 
 				$this->add_error(Error::MISSING_REQUIRED_PROPERTY, $scope, $name, $name);
+				return;
 			}
 
 			// Get value from scope for the current property
