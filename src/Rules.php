@@ -2,14 +2,10 @@
 
 	namespace ReflectRules;
 
-	use \victorwesterlund\xEnum;
-
 	use \ReflectRules\Scope;
 
 	// Supported types for is_type()
 	enum Type {
-		use xEnum;
-		
 		case NULL;
 		case ENUM;
 		case ARRAY;
@@ -58,13 +54,13 @@
 		}
 
 		// Set the minimum lenth/size for property
-		public function min(?int $value = null) {
+		public function min(?int $value = null): self {
 			$this->min = $value;
 			return $this;
 		}
 
 		// Set the maximum length/size for property
-		public function max(?int $value = null) {
+		public function max(?int $value = null): self {
 			$this->max = $value;
 			return $this;
 		}

@@ -2,12 +2,7 @@
 
 	namespace ReflectRules;
 
-	// Use the Response class from Reflect to override endpoint processing if requested
-	use \Reflect\Response;
-
 	use \ReflectRules\Rules;
-
-	require_once "../vendor/autoload.php";
 
 	require_once "Rules.php";
 
@@ -17,44 +12,34 @@
 		case POST = "_POST";
 	}
 
-	class Ruleset {
-		// This plugin will return exit with a Reflect\Response if errors are found
-		private bool $exit_on_errors;
+	enum Error {
+		case VALUE_MIN_ERROR;
+		case VALUE_MAX_ERROR;
+		case INVALID_PROPERTY_TYPE;
+		case INVALID_PROPERTY_VALUE;
+		case MISSING_REQUIRED_PROPERTY;
+	}
 
-		// Array of RuleError instances
+	class Ruleset {
+		// Array of arrays with failed constraints
 		private array $errors = [];
 
-		public function __construct(bool $exit_on_errors = true) {
-			// Set exit on errors override flag
-			$this->exit_on_errors = $exit_on_errors;
-		}
-
-		// Return property names for all Rules in array
-		private static function get_property_names(array $rules): array {
-			return array_map(fn(Rules $rule): string => $rule->get_property_name(), $rules);
-		}
-
-		// ----
+		public function __construct() {}
 
 		// Append an error to the array of errors
-		private function add_error(string $name, string $message): self {
-			// Create sub array for name if it doesn't exist
-			if (!array_key_exists($name, $this->errors)) {
-				$this->errors[$name] = [];
+		private function add_error(Error $error, Scope $scope, string $property, mixed $expected): void {
+			// Create sub array if this is the first error in this scope
+			if (!array_key_exists($scope->name, $this->errors)) {
+				$this->errors[$scope->name] = [];
 			}
 
-			$this->errors[$name][] = $message;
-			return $this;
-		}
-
-		private function eval_property_name_diff($rules, $scope_keys): void {
-			// Get property names that aren't defiend in the ruleset
-			$invalid_properties = array_diff($scope_keys, self::get_property_names($rules));
-
-			// Add error for each invalid property name
-			foreach ($invalid_properties as $invalid_property) {
-				$this->add_error($invalid_property, "Unknown property name '{$invalid_property}'");
+			// Create sub array if this is the first error for this property
+			if (!array_key_exists($property, $this->errors[$scope->name])) {
+				$this->errors[$scope->name][$property] = [];
 			}
+
+			// Set expected value value for property in scope
+			$this->errors[$scope->name][$property][$error->name] = $expected;
 		}
 
 		// Evaluate Rules against a given value
@@ -69,7 +54,8 @@
 					return;
 				}
 
-				$this->add_error($name, "Value can not be empty");
+				$this->add_error(Error::MISSING_REQUIRED_PROPERTY, $scope, $name, $name);
+				return;
 			}
 
 			// Get value from scope for the current property
@@ -80,64 +66,48 @@
 				The error messages will be returned 
 			*/
 
+			// Value is not of the correct type or enum value
 			if ($rules->types && !$rules->eval_type($value, $scope)) {
-				// List names of each allowed type
-				$types = implode(" or ", array_map(fn($type): string => $type->name, $rules->types));
+				if (!$rules->enum) {
+					// Get type names from enum
+					$types = array_map(fn(Type $type): string => $type->name, $rules->types);
 
-				// List allowed enum values
-				if ($rules->enum) {
-					$values = implode(" or ", array_map(fn($value): string => "'{$value}'", $rules->enum));
-					$this->add_error($name, "Value must be exactly: {$values}");
+					$this->add_error(Error::INVALID_PROPERTY_TYPE, $scope, $name, $types);
+				} else {
+					$this->add_error(Error::INVALID_PROPERTY_VALUE, $scope, $name, $rules->enum);
 				}
-
-				$this->add_error($name, "Value must be of type {$types}");
 			}
 
 			if ($rules->min && !$rules->eval_min($value, $scope)) {
-				$this->add_error($name, "Value must be larger or equal to {$rules->min}");
+				$this->add_error(Error::VALUE_MIN_ERROR, $scope, $name, $rules->min);
 			}
 
 			if ($rules->max && !$rules->eval_max($value, $scope)) {
-				$this->add_error($name, "Value must be smaller or equal to {$rules->max}");
+				$this->add_error(Error::VALUE_MAX_ERROR, $scope, $name, $rules->max);
 			}
-		}
-
-		// Evaluate all Rules in this Ruleset against values in scope and return true if no errors were found
-		private function eval_all_rules(array $rules, Scope $scope): bool {
-			foreach ($rules as $rule) {
-				$this->eval_rules($rule, $scope);
-			}
-
-			return empty($this->errors);
 		}
 
 		// ----
 
 		// Perform request processing on GET properties (search parameters)
-		public function GET(array $rules): true|array|Response {
-			$this->eval_property_name_diff($rules, array_keys($_GET));
-
-			$is_valid = $this->eval_all_rules($rules, Scope::GET);
-
-			// Return errors as a Reflect\Response
-			if (!$is_valid && $this->exit_on_errors) {
-				return new Response($this->errors, 422);
+		public function GET(array $rules): void {
+			foreach ($rules as $rule) {
+				$this->eval_rules($rule, Scope::GET);
 			}
-
-			return $is_valid ? true : $this->errors;
 		}
 
 		// Perform request processing on POST properties (request body)
-		public function POST(array $rules): true|array|Response {
-			$this->eval_property_name_diff($rules, array_keys($_POST));
-
-			$is_valid = $this->eval_all_rules($rules, Scope::POST);
-
-			// Return errors as a Reflect\Response
-			if (!$is_valid && $this->exit_on_errors) {
-				return new Response($this->errors, 422);
+		public function POST(array $rules): void {
+			foreach ($rules as $rule) {
+				$this->eval_rules($rule, Scope::POST);
 			}
+		}
 
-			return $is_valid ? true : $this->errors;
+		public function is_valid(): bool {
+			return empty($this->errors);
+		}
+
+		public function get_errors(): array {
+			return $this->errors;
 		}
 	}

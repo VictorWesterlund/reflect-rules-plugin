@@ -1,13 +1,12 @@
 # Request validation plugin for the [Reflect API Framework](https://github.com/victorwesterlund/reflect)
-This request pre-processor adds request validation to an API written for the Reflect API Framework. Enforce request constraints against set rules and optionally return errors back with a `Reflect\Response` before your endpoint's code even starts running.
+This request pre-processor adds request validation for an API written in the Reflect API Framework.
 
-Write Reflect endpoints safer by assuming data is what you expect it to be before it reaches your endpoint's logic. This plugin will validate GET and POST parameters against user-defined constraints before letting a request through to a `Reflect\Endpoint`.
-A `Reflect\Response` will be generated and handled by this plugin if request data doesn't meet the defiend constraints.
+Write safer Reflect endpoints by enforcing request data structure validation before the request reaches your endpoint's logic. This plugin validates GET and POST data (even JSON) and returns an array with scoped `Error`s that can be further acted upon if desired.
 
 *Example:*
 ```
-Request: /my-endpoint?key1=lorem-ipsum&key2=dolor
-Response: (HTTP 422) {"key2": ["Value must be of type 'STRING']}
+GET Request: /my-endpoint?key1=lorem-ipsum&key2=dolor
+POST Body: {"key3":15, "key4":["hello", "world"]}
 ```
 ```php
 use \Reflect\Endpoint;
@@ -30,7 +29,18 @@ class GET_MyEndpoint implements Endpoint {
         ->min(5)
         ->max(50),
       (new Rules("key2")
+        ->required()
         ->type(Type::NUMBER)
+        ->max(255)
+    ]);
+
+    $this->rules->POST([
+      (new Rules("key3")
+        ->type(Type::ARRAY)
+        ->min(3),
+      (new Rules("key4")
+        ->required()
+        ->type(Type::STRING)
         ->max(255)
     ]);
   }
@@ -40,6 +50,26 @@ class GET_MyEndpoint implements Endpoint {
   }
 }
 ```
+```php
+Ruleset->get_errors();
+[
+  "GET" => [
+    "key2" => [
+      "INVALID_PROPERTY_TYPE" => ["STRING"]
+    ]
+  ],
+  "POST" => [
+    "key3" => [
+      "VALUE_MIN_ERROR" => 3
+    ],
+    "key4" => [
+      "MISSING_REQUIRED_PROPERTY" => "key4"
+    ]
+  ]
+]
+```
+
+Use `Ruleset->is_valid(): bool` to quickly check if any errors are set.
 
 # Installation
 
@@ -70,6 +100,16 @@ public function __construct() {
 }
 ```
 
+# Errors 
+
+Error
+--|
+[`Error::VALUE_MIN_ERROR`](#min)
+[`Error::VALUE_MAX_ERROR`](#max)
+[`Error::INVALID_PROPERTY_TYPE`](#type)
+[`Error::INVALID_PROPERTY_VALUE`](#typeenum)
+[`Error::MISSING_REQUIRED_PROPERTY`](#required)
+
 # Available rules
 The following methods can be chained onto a `Rules` instance to enforce certain constraints on a particular property
 
@@ -78,7 +118,9 @@ The following methods can be chained onto a `Rules` instance to enforce certain 
 Rules->required(bool = true);
 ```
 
-Make a property mandatory by chaining the `required()` method. Omitting this rule will only validate other rules on the property IF the key has been provided in the current scope
+Make a property mandatory by chaining the `required()` method. Omitting this rule will only validate other rules on the property IF the key has been provided in the current scope.
+
+Will set a `Error::MISSING_REQUIRED_PROPERTY` error on the current scope and property if failed.
 
 ## `type()`
 ```php
@@ -105,6 +147,8 @@ Type|Description
 `Type::ENUM`|Value must be exactly one of pre-defined values ([**more information**](#typeenum))
 `Type::NULL`|Value must be null or ([**considered null for GET rules**](#null-coercion-from-string-for-search-parameters))
 
+Will set a `Error::INVALID_PROPERTY_TYPE` error on the current scope and property if failed, except Type::ENUM that will set a `Error::INVALID_PROPERTY_VALUE` with an array of the valid vaules.
+
 #### `Type::ENUM`
 
 Provided value for property must be an exact match of any value provided as an `array` to the second argument of `type(Type::ENUM, <whitelist>)`
@@ -115,6 +159,8 @@ Rules->type(Type::ENUM, [
 ]);
 ```
 Any value that isn't `"FOO"` or `"BAR"` will be rejected.
+
+Will set a `Error::INVALID_PROPERTY_VALUE` error on the current scope and property if failed.
 
 #### Boolean coercion from string for search parameters
 Search parameters are read as strings, a boolean is therefor coerced from the following rules.
@@ -164,6 +210,8 @@ Type|Expects
 
 **`min()` will not have an effect on [`Type`](#types)s not provided in this list.**
 
+Will set a `Error::VALUE_MIN_ERROR` error on the current scope and property if failed
+
 ## `max()`
 ```php
 Rules->max(?int = null);
@@ -177,3 +225,5 @@ Type|Expects
 `Type::ARRAY`, `Type::OBJECT`|Array size or object key count to be smaller or equal to provided value
 
 **`max()` will not have an effect on [`Type`](#types)s not provided in this list.**
+
+Will set a `Error::VALUE_MAX_ERROR` error on the current scope and property if failed

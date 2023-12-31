@@ -4,46 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "98953f6b9df8b6761e2d57fc66815033",
-    "packages": [
-        {
-            "name": "victorwesterlund/xenum",
-            "version": "1.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/VictorWesterlund/php-xenum.git",
-                "reference": "8972f06f42abd1f382807a67e937d5564bb89699"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/VictorWesterlund/php-xenum/zipball/8972f06f42abd1f382807a67e937d5564bb89699",
-                "reference": "8972f06f42abd1f382807a67e937d5564bb89699",
-                "shasum": ""
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "victorwesterlund\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "GPL-3.0-only"
-            ],
-            "authors": [
-                {
-                    "name": "Victor Westerlund",
-                    "email": "victor.vesterlund@gmail.com"
-                }
-            ],
-            "description": "PHP eXtended Enums. The missing quality-of-life features from PHP 8+ Enums",
-            "support": {
-                "issues": "https://github.com/VictorWesterlund/php-xenum/issues",
-                "source": "https://github.com/VictorWesterlund/php-xenum/tree/1.1.1"
-            },
-            "time": "2023-11-20T10:10:39+00:00"
-        }
-    ],
+    "content-hash": "7c02351f2b860153c02a8f683d9c540f",
+    "packages": [],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
