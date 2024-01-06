@@ -20,7 +20,14 @@
 	}
 
 	class Rules {
+		private const CSV_DELIMITER = ",";
+
 		private string $property;
+
+		/*
+			# Rule properties
+			These properties store rules for an instance of a property
+		*/
 
 		public bool $required = false;
 
@@ -137,7 +144,7 @@
 			return !is_bool($value) && in_array($value, $this->enum);
 		}
 
-		private function eval_json(mixed $value, Scope $scope): bool {
+		private function eval_object(mixed $value, Scope $scope): bool {
 			// Arrays in POST parameters should already be decoded
 			if ($scope === Scope::POST) {
 				return is_array($value);
@@ -153,6 +160,20 @@
 
 			// Mutate property on superglobal with decoded JSON
 			$GLOBALS[Scope::GET->value][$this->property] = $json;
+
+			return true;
+		}
+
+		private function eval_array(string $value, Scope $scope): bool {
+			// Arrays in POST parameters should already be decoded
+			if ($scope === Scope::POST) {
+				return is_array($value);
+			}
+
+			// Mutate property on superglobal with decoded CSV if not already an array
+			if (!is_array($_GET[$this->property])) {
+				$GLOBALS[Scope::GET->value][$this->property] = explode(self::CSV_DELIMITER, $_GET[$this->property]);
+			}
 
 			return true;
 		}
@@ -186,8 +207,8 @@
 					Type::NUMBER  => $match = is_numeric($value),
 					Type::STRING  => $match = is_string($value),
 					Type::BOOLEAN => $match = $this->eval_type_boolean($value, $scope),
-					Type::ARRAY,
-					Type::OBJECT  => $match = $this->eval_json($value, $scope),
+					Type::ARRAY   => $match = $this->eval_array($value, $scope),
+					Type::OBJECT  => $match = $this->eval_object($value, $scope),
 					Type::ENUM    => $match = $this->eval_type_enum($value),
 					Type::NULL    => $match = is_null($value)
 				};
