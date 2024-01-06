@@ -141,11 +141,11 @@ Type|Description
 --|--
 `Type::NUMERIC`|Value must be a number or a numeric string
 `Type::STRING`|Value must be a string
-`Type::BOOLEAN`|Value must be a boolean or ([**considered bool for GET rules**](#boolean-coercion-from-string-for-search-parameters))
-`Type::ARRAY`|Value must be a JSON array
+`Type::BOOLEAN`|Value must be a boolean ([**considered bool for GET rules**](#boolean-coercion-from-string-for-search-parameters))
+`Type::ARRAY`|Value must be a JSON array or ([**CSV for GET rules**](#csv-for-search-parameters))
 `Type::OBJECT`|Value must be a JSON object
 `Type::ENUM`|Value must be exactly one of pre-defined values ([**more information**](#typeenum))
-`Type::NULL`|Value must be null or ([**considered null for GET rules**](#null-coercion-from-string-for-search-parameters))
+`Type::NULL`|Value must be null ([**considered null for GET rules**](#null-coercion-from-string-for-search-parameters))
 
 Will set a `Error::INVALID_PROPERTY_TYPE` error on the current scope and property if failed, except Type::ENUM that will set a `Error::INVALID_PROPERTY_VALUE` with an array of the valid vaules.
 
@@ -181,6 +181,19 @@ Any other value will cause the `type()` rule to fail.
 
 > [!IMPORTANT]
 > This coercion is only applies for `Ruleset->GET()`. `Ruleset->POST()` will enforce real `true` and `type` values since it's JSON
+
+#### CSV array for search parameters
+A CSV string is expected when `Type::ARRAY` is set for a GET rule.
+
+*Example:*
+```
+https://example.com?typeArray=key1,key2,key3
+```
+
+Any other value will cause the `type()` rule to fail.
+
+> [!IMPORTANT]
+> This coercion is only applies for `Ruleset->GET()`. `Ruleset->POST()` will enforce a JSON array
 
 #### Null coercion from string for search parameters
 Search parameters are read as strings, a null value is therefor coerced from an empty string `""`.

@@ -16,7 +16,14 @@
 	}
 
 	class Rules {
+		private const CSV_DELIMITER = ",";
+
 		private string $property;
+
+		/*
+			# Rule properties
+			These properties store rules for an instance of a property
+		*/
 
 		public bool $required = false;
 
@@ -133,6 +140,40 @@
 			return !is_bool($value) && in_array($value, $this->enum);
 		}
 
+		private function eval_object(mixed $value, Scope $scope): bool {
+			// Arrays in POST parameters should already be decoded
+			if ($scope === Scope::POST) {
+				return is_array($value);
+			}
+
+			// Decode stringified JSON
+			$json = json_decode($value);
+
+			// Failed to decode JSON
+			if ($json === null) {
+				return false;
+			}
+
+			// Mutate property on superglobal with decoded JSON
+			$GLOBALS[Scope::GET->value][$this->property] = $json;
+
+			return true;
+		}
+
+		private function eval_array(string $value, Scope $scope): bool {
+			// Arrays in POST parameters should already be decoded
+			if ($scope === Scope::POST) {
+				return is_array($value);
+			}
+
+			// Mutate property on superglobal with decoded CSV if not already an array
+			if (!is_array($_GET[$this->property])) {
+				$GLOBALS[Scope::GET->value][$this->property] = explode(self::CSV_DELIMITER, $_GET[$this->property]);
+			}
+
+			return true;
+		}
+
 		/*
 			## Public eval methods
 			These are the entry-point eval methods that in turn can call other
@@ -162,8 +203,8 @@
 					Type::NUMBER  => $match = is_numeric($value),
 					Type::STRING  => $match = is_string($value),
 					Type::BOOLEAN => $match = $this->eval_type_boolean($value, $scope),
-					Type::ARRAY,
-					Type::OBJECT  => $match = is_array($value),
+					Type::ARRAY   => $match = $this->eval_array($value, $scope),
+					Type::OBJECT  => $match = $this->eval_object($value, $scope),
 					Type::ENUM    => $match = $this->eval_type_enum($value),
 					Type::NULL    => $match = is_null($value)
 				};
@@ -185,7 +226,7 @@
 				Type::NUMBER => $this->eval_type($value, $scope) && $value >= $this->min,
 				Type::STRING => $this->eval_type($value, $scope) && strlen($value) >= $this->min,
 				Type::ARRAY,
-				Type::OBJECT => $this->eval_type($value, $scope) && count($value) >= $this->min,
+				Type::OBJECT => $this->eval_type($value, $scope) && count($GLOBALS[$scope->value][$this->property]) >= $this->min,
 				default => true
 			};
 		}
@@ -195,7 +236,7 @@
 				Type::NUMBER => $this->eval_type($value, $scope) && $value <= $this->max,
 				Type::STRING => $this->eval_type($value, $scope) && strlen($value) <= $this->max,
 				Type::ARRAY,
-				Type::OBJECT => $this->eval_type($value, $scope) && count($value) <= $this->max,
+				Type::OBJECT => $this->eval_type($value, $scope) && count($GLOBALS[$scope->value][$this->property]) <= $this->max,
 				default => true
 			};
 		}
