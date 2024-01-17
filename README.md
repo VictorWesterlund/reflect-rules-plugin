@@ -106,9 +106,19 @@ Error
 --|
 [`Error::VALUE_MIN_ERROR`](#min)
 [`Error::VALUE_MAX_ERROR`](#max)
+[`Error::UNKNOWN_PROPERTY_NAME`](#strict-mode)
 [`Error::INVALID_PROPERTY_TYPE`](#type)
 [`Error::INVALID_PROPERTY_VALUE`](#typeenum)
 [`Error::MISSING_REQUIRED_PROPERTY`](#required)
+
+# Strict mode
+Enable strict mode by initializing a Ruleset with the "strict" argument set to `true`.
+
+```php
+new Ruleset(strict: true);
+```
+
+Strict mode will not allow undefined properties to be set in all configured scopes. If a property exists in `Scope` that hasn't been defined with a `Rules()` instance, a `Errors::UNKNOWN_PROPERTY_NAME` error will be set.
 
 # Available rules
 The following methods can be chained onto a `Rules` instance to enforce certain constraints on a particular property
