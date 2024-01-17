@@ -10,29 +10,44 @@
 	enum Scope: string {
 		case GET  = "_GET";
 		case POST = "_POST";
+
+		static function get_array(): array {
+			return [
+				Scope::GET->name  => [],
+				Scope::POST->name => []
+			];
+		}
 	}
 
 	enum Error {
 		case VALUE_MIN_ERROR;
 		case VALUE_MAX_ERROR;
+		case UNKNOWN_PROPERTY_NAME;
 		case INVALID_PROPERTY_TYPE;
 		case INVALID_PROPERTY_VALUE;
 		case MISSING_REQUIRED_PROPERTY;
 	}
 
 	class Ruleset {
-		// Array of arrays with failed constraints
-		private array $errors = [];
+		private bool $is_valid = true;
+		private ?bool $strict;
+		private array $errors;
 
-		public function __construct() {}
+		private array $rules_names;
+
+		public function __construct(bool $strict = false) {
+			/*
+				Strict mode can only be enabled or disabled as a bool argument.
+				'null' is used internally on this property as a re-evaluate flag.
+			*/
+			$this->strict = $strict;
+
+			$this->errors = Scope::get_array();
+			$this->rules_names = Scope::get_array();
+		}
 
 		// Append an error to the array of errors
 		private function add_error(Error $error, Scope $scope, string $property, mixed $expected): void {
-			// Create sub array if this is the first error in this scope
-			if (!array_key_exists($scope->name, $this->errors)) {
-				$this->errors[$scope->name] = [];
-			}
-
 			// Create sub array if this is the first error for this property
 			if (!array_key_exists($property, $this->errors[$scope->name])) {
 				$this->errors[$scope->name][$property] = [];
@@ -40,6 +55,21 @@
 
 			// Set expected value value for property in scope
 			$this->errors[$scope->name][$property][$error->name] = $expected;
+			// Unset valid flag
+			$this->is_valid = false;
+		}
+
+		// Evaluate an array of Rules property names against scope keys
+		private function eval_strict(Scope $scope): void {
+			$name_diffs = array_diff(array_keys($GLOBALS[$scope->value]), $this->rules_names[$scope->name]);
+
+			// Set errors for each undefined property
+			foreach ($name_diffs as $name_diff) {
+				$this->add_error(Error::UNKNOWN_PROPERTY_NAME, $scope, $name_diff, null);
+			}
+
+			// Unset strict mode property now that we have evaled it up to this point
+			$this->strict = null;
 		}
 
 		// Evaluate Rules against a given value
@@ -91,23 +121,52 @@
 
 		// Perform request processing on GET properties (search parameters)
 		public function GET(array $rules): void {
+			// (Re)enable strict mode if property is null
+			if ($this->strict === null) {
+				$this->strict = true;
+			}
+
 			foreach ($rules as $rule) {
+				$this->rules_names[Scope::GET->name][] = $rule->get_property_name();
+
 				$this->eval_rules($rule, Scope::GET);
 			}
 		}
 
 		// Perform request processing on POST properties (request body)
 		public function POST(array $rules): void {
+			// (Re)enable strict mode if property is null
+			if ($this->strict === null) {
+				$this->strict = true;
+			}
+
 			foreach ($rules as $rule) {
+				$this->rules_names[Scope::POST->name][] = $rule->get_property_name();
+
 				$this->eval_rules($rule, Scope::POST);
 			}
 		}
 
-		public function is_valid(): bool {
-			return empty($this->errors);
+		// ----
+
+		// Return array of all set Errors
+		public function get_errors(): array {
+			// Strict mode is enabled
+			if ($this->strict === true) {
+				$this->eval_strict(Scope::GET);
+				$this->eval_strict(Scope::POST);
+			}
+
+			return $this->errors;
 		}
 
-		public function get_errors(): array {
-			return $this->errors;
+		public function is_valid(): bool {
+			// Strict mode is enabled
+			if ($this->strict === true) {
+				$this->eval_strict(Scope::GET);
+				$this->eval_strict(Scope::POST);
+			}
+
+			return $this->is_valid;
 		}
 	}
