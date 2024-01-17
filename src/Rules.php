@@ -160,7 +160,7 @@
 			return true;
 		}
 
-		private function eval_array(string $value, Scope $scope): bool {
+		private function eval_array(string|array $value, Scope $scope): bool {
 			// Arrays in POST parameters should already be decoded
 			if ($scope === Scope::POST) {
 				return is_array($value);
